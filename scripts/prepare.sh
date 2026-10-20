@@ -206,8 +206,8 @@ for i in $(worker_ids); do
     worker "$i" docker tag "$prebuilt" "$IMAGE"
     log "Using $prebuilt as $IMAGE on $w"
   else
-    log "Copying $IMAGE to $w (docker save | docker load; only missing layers are stored)"
-    docker save "$IMAGE" | worker "$i" docker load >/dev/null
+    log "Copying $IMAGE to $w over the Sparks' link ($(worker_link_host "$i"); docker save | docker load; only missing layers are stored)"
+    docker save "$IMAGE" | worker_link "$i" docker load >/dev/null
   fi
   [[ "$(worker_image_ident "$i" "$IMAGE")" == "$image_id" ]] || die "$w's $IMAGE differs from the head's"
 done
@@ -283,7 +283,7 @@ done
 for i in $(worker_ids); do
 for id in "${models[@]}"; do
   [[ "$(worker_weights "$i")" == nfs ]] && break
-  w=$(wname "$i"); WHOST=$(worker_host "$i"); WHF=${WORKER_HF[i]}
+  w=$(wname "$i"); WHOST=$(worker_link_host "$i"); WHF=${WORKER_HF[i]}
   dir=$(model_cache_dir "$id"); rev=$(snapshot_rev "$id")
   # every file of the snapshot, with its size (links followed), as the head has it
   manifest=$(cd "$dir/snapshots/$rev" && find -L . -type f -printf '%P %s\n' | LC_ALL=C sort)
@@ -305,7 +305,7 @@ for id in "${models[@]}"; do
   wfree=$(worker_free_gb "$i" "$WHF")
   (( wfree >= need )) ||
     die "only ${wfree} GB free under $WHF on $w; $id needs ~${need} GB there (~${send} GB to send; or set $(wvar WORKER_WEIGHTS "$i")=nfs)"
-  log "Copying $id @ ${rev:0:8} to $w over the Sparks' link (~${send} GB to send, resumes)"
+  log "Copying $id @ ${rev:0:8} to $w over the Sparks' link ($WHOST; ~${send} GB to send, resumes)"
   worker "$i" "mkdir -p '$wdir/refs' '$wdir/snapshots'"
   # the blobs, then the snapshot's links and refs/main
   # -L: a blob may itself be a link into the cache root's blobs/ (huggingface_hub's xet backend, issue #15)

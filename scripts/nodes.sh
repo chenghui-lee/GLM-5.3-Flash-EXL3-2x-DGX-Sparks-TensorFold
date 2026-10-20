@@ -37,6 +37,23 @@ worker() {
   ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 "$(worker_host "$i")" "$@"
 }
 
+# worker_link_host <i>: worker i's ssh target on its direct link to the head, preserving an explicit user from
+# WORKER<i>. detect_links fills LINK_WORKER_ADDR; fall back to the ordinary ssh target for DRY_RUN or when called
+# before link detection. Bulk transfers use this while worker() keeps using the management address.
+worker_link_host() {
+  local h addr
+  h=$(worker_host "$1"); addr=${LINK_WORKER_ADDR[$1]:-}
+  [[ -n "$addr" && "$addr" != \<* ]] || { echo "$h"; return; }
+  if [[ "$h" == *@* ]]; then echo "${h%@*}@$addr"; else echo "$addr"; fi
+}
+
+# worker_link <i> <command...>: like worker(), but carry bulk stdin/stdout over the direct fabric link.
+worker_link() {
+  local i=$1; shift
+  [[ -z "${WORKER_DOWN[$i]:-}" ]] || return 255
+  ssh -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 "$(worker_link_host "$i")" "$@"
+}
+
 # save_log <dir> <rank> <container> <keep>: the container's log (stdout and stderr, with timestamps) gzipped into
 # <dir>/<date>-<time>-rank<N>.log.gz before the container is removed (docker rm deletes it), keeping the newest <keep>
 # of that rank; prints the file. Runs on the worker too (its definition is sent over ssh): no config.sh there.

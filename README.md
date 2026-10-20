@@ -251,10 +251,12 @@ the progress lines, the window retry or the smoke test; when either rank ends, i
    by the digest pinned in `scripts/config.sh` (`IMAGE_TAG` / `IMAGE_DIGEST`) while the patches are this release's
    (the hash covers the patches and those pip packages); after you change `patches/`, it pulls that hash's tag if
    one is published, else (or with `PULL=0`) it builds.
-3. The same image on the worker: pulled, else streamed from the head (`docker save | docker load`), checked identical.
+3. The same image on the worker: pulled, else streamed from the head over the detected CX-7 link
+   (`docker save | docker load`), checked identical.
 4. The checkpoint, and DFlash2 with `DRAFTER=dflash2`, downloaded into `~/.cache/huggingface` on the head at their
    pinned revisions (the checkpoint checked with `tensorfold info`), then copied to the worker with `rsync` over ssh
-   and checked file by file. Both resume.
+   on the detected CX-7 link and checked file by file. The worker's user comes from `WORKER`; its transfer address comes
+   from `FABRIC_PEER` or link detection, so a LAN `WORKER` does not route the weights through the LAN. Both resume.
 
 ```bash
 scripts/prepare.sh             # set up both Sparks without starting the server
