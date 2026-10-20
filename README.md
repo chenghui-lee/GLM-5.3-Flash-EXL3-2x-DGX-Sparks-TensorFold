@@ -1,3 +1,10 @@
+# Local NVIDIA FP4 TP2 deployment
+
+This checkout's `.env` selects `nvidia/GLM-5.3-Flash-FP4-Local` with native
+TensorFold 1.1.1 on two DGX Sparks. Use `./start.sh`, `./start.sh restart`, and
+`./stop.sh`. See [NVIDIA FP4 deployment notes](docs/NVIDIA_FP4_TP2.md) for the
+pinned revisions, settings, and differences from the EXL3 recipe below.
+
 <h1 align="center">GLM-5.3-Flash EXL3 on DGX Sparks with TensorFold</h1>
 
 <p align="center">

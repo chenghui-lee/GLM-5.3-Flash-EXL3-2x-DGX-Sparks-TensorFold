@@ -43,6 +43,9 @@
 set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")"
 source ./scripts/config.sh
+if [[ "$MODEL_ID" == nvidia/GLM-5.3-Flash-FP4-Local ]]; then
+  exec bash ./scripts/start-native.sh "$@"
+fi
 source ./scripts/nodes.sh
 
 usage() { awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"; }

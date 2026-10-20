@@ -1,0 +1,13 @@
+ARG BASE_IMAGE=nvcr.io/nvidia/pytorch:26.07-py3
+FROM ${BASE_IMAGE}
+ARG NATIVE_VERSION
+ARG NATIVE_SHA256
+COPY release.tar.gz /tmp/tensorfold-release.tar.gz
+RUN echo "${NATIVE_SHA256}  /tmp/tensorfold-release.tar.gz" | sha256sum -c - && \
+    mkdir -p /opt/tensorfold && \
+    tar -xzf /tmp/tensorfold-release.tar.gz -C /opt/tensorfold --strip-components=1 && \
+    rm /tmp/tensorfold-release.tar.gz && \
+    /opt/tensorfold/bin/tensorfold-native --version
+LABEL tf.native.version=${NATIVE_VERSION} tf.native.sha256=${NATIVE_SHA256}
+ENV HF_HOME=/root/.cache/huggingface HF_HUB_OFFLINE=1 TENSORFOLD_NO_UPDATE_CHECK=1
+ENTRYPOINT ["/opt/tensorfold/bin/tensorfold-native"]

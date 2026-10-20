@@ -16,6 +16,9 @@
 set -euo pipefail
 cd "$(dirname "$(readlink -f "$0")")/.."     # the repository root
 source ./scripts/config.sh
+if [[ "$MODEL_ID" == nvidia/GLM-5.3-Flash-FP4-Local ]]; then
+  exec bash ./scripts/prepare-native.sh "$@"
+fi
 source ./scripts/nodes.sh
 
 REBUILD=0
